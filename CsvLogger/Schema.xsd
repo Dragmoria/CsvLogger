@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="schema">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="column" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="name" type="xs:string" use="required" />
+						<xs:attribute name="type" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="s" />
+									<xs:enumeration value="i" />
+									<xs:enumeration value="b" />
+									<xs:enumeration value="d" />
+									<xs:enumeration value="dt" />
+									<xs:enumeration value="dec" />
+									<xs:enumeration value="g" />
+									<xs:enumeration value="f" />
+									<xs:enumeration value="c" />
+									<xs:enumeration value="l" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
