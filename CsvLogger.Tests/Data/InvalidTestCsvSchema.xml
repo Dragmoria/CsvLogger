@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<schema>
+	<column name="StartDateTime" type="invalid" />
+	<column name="EndDateTime" type="dt" />
+	<column name="Identifier" type="g" />
+	<column name="Field1" type="s" />
+	<column name="Field2" type="i" />
+	<column name="Field3" type="b" />
+	<column name="Field4" type="d" />
+	<column name="Field5" type="dt" />
+</schema>
