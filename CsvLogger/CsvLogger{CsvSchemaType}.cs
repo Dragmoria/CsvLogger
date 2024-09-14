@@ -11,19 +11,19 @@ namespace CsvLogger
     /// <summary>
     /// A logger for writing CSV data with a specified schema.
     /// </summary>
-    /// <typeparam name="CsvSchemaType">The type representing the CSV schema, which must implement <see cref="ICsvSchema"/> and have a parameterless constructor.</typeparam>
-    public class CsvLogger<CsvSchemaType> : BaseCsvLogger where CsvSchemaType : ICsvSchema, new()
+    /// <typeparam name="TCsvSchemaType">The type representing the CSV schema, which must implement <see cref="ICsvSchema"/> and have a parameterless constructor.</typeparam>
+    public class CsvLogger<TCsvSchemaType> : BaseCsvLogger where TCsvSchemaType : class, ICsvSchema, new()
     {
         /// <summary>
         /// Gets or sets the data to be logged.
         /// </summary>
-        public CsvSchemaType Data { get; set; }
+        public TCsvSchemaType Data { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CsvLogger{CsvSchemaType}"/> class. With default delimiter of ';' and maxfilesize of 10gb.
         /// </summary>
         /// <param name="outputDirectory">The directory where log files will be stored.</param>
-        public CsvLogger(DirectoryInfo outputDirectory) : this(outputDirectory, FileSize.FromGB(10), ';') { }
+        public CsvLogger(DirectoryInfo outputDirectory) : this(outputDirectory, FileSize.FromGb(10), ';') { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CsvLogger{CsvSchemaType}"/> class. With default delimiter of ';'.
@@ -37,7 +37,7 @@ namespace CsvLogger
         /// </summary>
         /// <param name="outputDirectory">The directory where log files will be stored.</param>
         /// <param name="delimiter">The delimiter to use in the CSV file.</param>
-        public CsvLogger(DirectoryInfo outputDirectory, char delimiter) : this(outputDirectory, FileSize.FromGB(10), delimiter) { }
+        public CsvLogger(DirectoryInfo outputDirectory, char delimiter) : this(outputDirectory, FileSize.FromGb(10), delimiter) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CsvLogger{CsvSchemaType}"/> class.
@@ -47,12 +47,10 @@ namespace CsvLogger
         /// <param name="maxFileSize">The maximum file size per log file.</param>
         public CsvLogger(DirectoryInfo outputDirectory, FileSize maxFileSize, char delimiter) : base(outputDirectory, maxFileSize, delimiter)
         {
-            Data = new CsvSchemaType();
+            Data = new TCsvSchemaType();
 
-            if (!_outputDirectory.Exists)
-            {
-                _outputDirectory.Create();
-            }
+            if (!_outputDirectory.Exists) _outputDirectory.Create();
+
             _latestFile = GetLatestValidFile();
 
             Data.StartDateTime = DateTime.Now;
@@ -70,7 +68,7 @@ namespace CsvLogger
         /// <returns>A list of headings.</returns>
         public override List<string> GetHeadings()
         {
-            return typeof(CsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            return typeof(TCsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                             .Select(prop => prop.Name)
                             .ToList();
         }
@@ -81,7 +79,7 @@ namespace CsvLogger
         /// <returns>A list of values.</returns>
         public override List<string> GetValues()
         {
-            return typeof(CsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            return typeof(TCsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                             .Select(prop => prop.GetValue(Data)?.ToString() ?? "")
                             .ToList();
         }
@@ -92,9 +90,9 @@ namespace CsvLogger
         /// <returns>A read-only dictionary of schema property names and values.</returns>
         public ReadOnlyDictionary<string, string> GetSchemaAsDictionary()
         {
-            var schemaProps = typeof(CsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var schemaProps = typeof(TCsvSchemaType).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            Dictionary<string, string> schemaDict = schemaProps.ToDictionary(
+            var schemaDict = schemaProps.ToDictionary(
                 prop => prop.Name,
                 prop => prop.GetValue(Data)?.ToString() ?? ""
             );

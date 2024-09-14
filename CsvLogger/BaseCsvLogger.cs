@@ -67,6 +67,7 @@ namespace CsvLogger
                     return false;
                 }
 
+                // Also validates delimiter consistency
                 var itemsOnLine = nonWhiteSpaceLine.Split(_delimiter);
                 var headings = GetHeadings();
 
@@ -93,11 +94,23 @@ namespace CsvLogger
         /// <returns>The newly created log file.</returns>
         protected FileInfo GenerateNewLogFile()
         {
-            string fileName = $"log_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string fileName = $"log_{timestamp}.csv";
             var newFile = new FileInfo(Path.Combine(_outputDirectory.FullName, fileName));
 
+            // Check if the file exists and modify the name by appending (1), (2), etc.
+            int counter = 1;
+            while (newFile.Exists)
+            {
+                fileName = $"log_{timestamp}({counter}).csv";
+                newFile = new FileInfo(Path.Combine(_outputDirectory.FullName, fileName));
+                counter++;
+            }
+
+            // Create the new log file
             using (var _ = newFile.Create()) { }
             AppendToFile(GetHeadings(), newFile);
+
             return newFile;
         }
 
@@ -115,10 +128,7 @@ namespace CsvLogger
 
             var mostRecentFile = files.OrderByDescending(f => f.LastWriteTime).First();
 
-            if (AreHeadingsConsistent(mostRecentFile))
-            {
-                return mostRecentFile;
-            }
+            if (AreHeadingsConsistent(mostRecentFile)) return mostRecentFile;
 
             return GenerateNewLogFile();
         }
@@ -129,6 +139,8 @@ namespace CsvLogger
         /// </summary>
         public virtual void WriteLogLine()
         {
+            _latestFile = new FileInfo(_latestFile.FullName);
+
             if (new FileSize(_latestFile.Length) > _maxFileSize)
             {
                 _latestFile = GenerateNewLogFile();

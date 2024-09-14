@@ -13,9 +13,9 @@ namespace CsvLogger.Data
     /// </summary>
     public class CsvDictionary
     {
-        private static readonly string XSDFILEPATH = @"./Logger/Schema.xsd";
-        public static readonly string STARTTIMEKEY = "StartDateTime";
-        public static readonly string ENDTIMEKEY = "EndDateTime";
+        private const string XSDFILEPATH = @"./Data/Schema.xsd";
+        public const string STARTTIMEKEY = "StartDateTime";
+        public const string ENDTIMEKEY = "EndDateTime";
 
         /// <summary>
         /// The dictionary that holds the column names and their associated typed values.
@@ -33,6 +33,11 @@ namespace CsvLogger.Data
             LoadSchema(schemaFile);
         }
 
+        public CsvDictionary()
+        {
+            _dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Sets the value for a specified key in the dictionary.
         /// </summary>
@@ -45,10 +50,26 @@ namespace CsvLogger.Data
         {
             if (key is null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
-            if (!_dictionary.ContainsKey(key)) throw new ArgumentException($"Dictionary does not contain a key of {key}");
+            if (!_dictionary.TryGetValue(key, out var untypedValue)) throw new ArgumentException($"Dictionary does not contain a key of {key}");
 
-            var typedValue = (TypedValue<T>)_dictionary[key];
+            var typedValue = (TypedValue<T>)untypedValue;
             typedValue.SetValue(value);
+        }
+
+        public TypedValue<T> GetValue<T>(string key)
+        {
+            if (key is null) throw new ArgumentNullException(nameof(key));
+            if (!_dictionary.TryGetValue(key, out var untypedValue)) throw new ArgumentException($"Dictionary does not contain a key of {key}");
+
+            return (TypedValue<T>)untypedValue;
+        }
+
+        public object GetValue(string key)
+        {
+            if (key is null) throw new ArgumentNullException(nameof(key));
+            if (!_dictionary.TryGetValue(key, out var untypedValue)) throw new ArgumentException($"Dictionary does not contain a key of {key}");
+
+            return untypedValue;
         }
 
         /// <summary>
@@ -56,33 +77,33 @@ namespace CsvLogger.Data
         /// </summary>
         /// <param name="schemaFile">The XML file that contains the schema definition.</param>
         /// <exception cref="IncorrectFileTypeException">Thrown when the file type is incorrect.</exception>
+        /// <exception cref="FileNotFoundException">Thrown when the file can't be found.</exception>
         public void LoadSchema(FileInfo schemaFile)
         {
             IncorrectFileTypeException.ThrowIfIncorrectFileType(schemaFile, "xml");
 
-            XmlSchemaSet xsdSchema = new XmlSchemaSet();
+            var xsdSchema = new XmlSchemaSet();
             xsdSchema.Add("", XSDFILEPATH);
 
-            XmlReaderSettings settings = new XmlReaderSettings
+            var settings = new XmlReaderSettings
             {
                 Schemas = xsdSchema,
                 ValidationType = ValidationType.Schema
             };
             settings.ValidationEventHandler += Settings_ValidationEventHandler;
 
-            using (XmlReader reader = XmlReader.Create(schemaFile.FullName, settings))
+            using (var reader = XmlReader.Create(schemaFile.FullName, settings))
             {
                 while (reader.Read())
                 {
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "column")
-                    {
-                        string columnName = reader.GetAttribute("name");
-                        string typeAbbreviation = reader.GetAttribute("type");
+                    if (reader.NodeType != XmlNodeType.Element || reader.Name != "column") continue;
+                    
+                    var columnName = reader.GetAttribute("name");
+                    var typeAbbreviation = reader.GetAttribute("type");
 
-                        if (!string.IsNullOrEmpty(columnName) && !string.IsNullOrEmpty(typeAbbreviation))
-                        {
-                            AddTypedValueToDictionary(columnName, typeAbbreviation);
-                        }
+                    if (!string.IsNullOrEmpty(columnName) && !string.IsNullOrEmpty(typeAbbreviation))
+                    {
+                        AddTypedValueToDictionary(columnName, typeAbbreviation);
                     }
                 }
             }
@@ -95,11 +116,9 @@ namespace CsvLogger.Data
         /// </summary>
         private void AddStartAndEndTime()
         {
-            if (!_dictionary.ContainsKey(STARTTIMEKEY))
-                _dictionary.Add(STARTTIMEKEY, new TypedValue<DateTime>());
+            if (!_dictionary.ContainsKey(STARTTIMEKEY)) _dictionary.Add(STARTTIMEKEY, new TypedValue<DateTime>());
 
-            if (!_dictionary.ContainsKey(ENDTIMEKEY))
-                _dictionary.Add(ENDTIMEKEY, new TypedValue<DateTime>());
+            if (!_dictionary.ContainsKey(ENDTIMEKEY)) _dictionary.Add(ENDTIMEKEY, new TypedValue<DateTime>());
         }
 
         /// <summary>
@@ -163,7 +182,7 @@ namespace CsvLogger.Data
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The validation event arguments.</param>
         /// <exception cref="XmlSchemaValidationException">Thrown when XML schema validation fails.</exception>
-        private void Settings_ValidationEventHandler(object sender, ValidationEventArgs e)
+        private static void Settings_ValidationEventHandler(object sender, ValidationEventArgs e)
         {
             throw new XmlSchemaValidationException("Xsd -> xml validation failed.");
         }
@@ -180,14 +199,12 @@ namespace CsvLogger.Data
         /// <returns>A list of values.</returns>
         public List<string> GetValues()
         {
-            List<string> valuesAsStrings = new List<string>();
+            return _dictionary.Values.Select(value => value.ToString()).ToList();
+        }
 
-            foreach (var value in _dictionary.Values)
-            {
-                valuesAsStrings.Add(value.ToString());
-            }
-
-            return valuesAsStrings;
+        public List<Type> GetTypes()
+        {
+            return _dictionary.Values.Select(value => value.GetType()).ToList();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CsvLogger
+namespace CsvLogger.Data
 {
     /// <summary>
     /// Defines the contract for a CSV schema, which includes properties for tracking
@@ -17,13 +17,5 @@ namespace CsvLogger
         /// Gets or sets the end date and time of the log entry.
         /// </summary>
         DateTime EndDateTime { get; set; }
-    }
-
-    public struct Test : ICsvSchema
-    {
-        public DateTime StartDateTime { get; set; }
-        public DateTime EndDateTime { get; set; }
-
-        public string Field1 { get; set; }
     }
 }

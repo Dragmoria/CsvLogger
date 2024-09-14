@@ -2,7 +2,25 @@
 {
     public readonly struct FileSize
     {
-        private readonly long _bytes;
+        /// <summary>
+        /// Gets the size in bytes.
+        /// </summary>
+        public long Bytes { get; }
+
+        /// <summary>
+        /// Gets the size in kilobytes.
+        /// </summary>
+        public long KiloBytes => Bytes / 1024;
+
+        /// <summary>
+        /// Gets the size in megabytes.
+        /// </summary>
+        public double Megabytes => Bytes / (1024.0 * 1024.0);
+
+        /// <summary>
+        /// Gets the size in gigabytes.
+        /// </summary>
+        public double Gigabytes => Bytes / (1024.0 * 1024.0 * 1024.0);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileSize"/> struct with the specified size in bytes.
@@ -10,28 +28,8 @@
         /// <param name="bytes">The size of the file in bytes.</param>
         public FileSize(long bytes)
         {
-            _bytes = bytes;
+            Bytes = bytes;
         }
-
-        /// <summary>
-        /// Gets the size in bytes.
-        /// </summary>
-        public long Bytes => _bytes;
-
-        /// <summary>
-        /// Gets the size in kilobytes.
-        /// </summary>
-        public long KiloBytes => _bytes / 1024;
-
-        /// <summary>
-        /// Gets the size in megabytes.
-        /// </summary>
-        public double Megabytes => _bytes / (1024.0 * 1024.0);
-
-        /// <summary>
-        /// Gets the size in gigabytes.
-        /// </summary>
-        public double Gigabytes => _bytes / (1024.0 * 1024.0 * 1024.0);
 
         /// <summary>
         /// Creates a new instance of <see cref="FileSize"/> from the specified number of bytes.
@@ -48,7 +46,7 @@
         /// </summary>
         /// <param name="kilobytes">The file size in kilobytes.</param>
         /// <returns>A <see cref="FileSize"/> object representing the specified size in kilobytes.</returns>
-        public static FileSize FromKB(double kilobytes)
+        public static FileSize FromKb(double kilobytes)
         {
             return new FileSize((long)(kilobytes * 1024));
         }
@@ -58,7 +56,7 @@
         /// </summary>
         /// <param name="megabytes">The file size in megabytes.</param>
         /// <returns>A <see cref="FileSize"/> object representing the specified size in megabytes.</returns>
-        public static FileSize FromMB(double megabytes)
+        public static FileSize FromMb(double megabytes)
         {
             return new FileSize((long)(megabytes * 1024 * 1024));
         }
@@ -68,23 +66,23 @@
         /// </summary>
         /// <param name="gigabytes">The file size in gigabytes.</param>
         /// <returns>A <see cref="FileSize"/> object representing the specified size in gigabytes.</returns>
-        public static FileSize FromGB(double gigabytes)
+        public static FileSize FromGb(double gigabytes)
         {
             return new FileSize((long)(gigabytes * 1024 * 1024 * 1024));
         }
 
         // Comparison operators
-        public static bool operator >(FileSize left, FileSize right) => left._bytes > right._bytes;
+        public static bool operator >(FileSize left, FileSize right) => left.Bytes > right.Bytes;
 
-        public static bool operator <(FileSize left, FileSize right) => left._bytes < right._bytes;
+        public static bool operator <(FileSize left, FileSize right) => left.Bytes < right.Bytes;
 
-        public static bool operator >=(FileSize left, FileSize right) => left._bytes >= right._bytes;
+        public static bool operator >=(FileSize left, FileSize right) => left.Bytes >= right.Bytes;
 
-        public static bool operator <=(FileSize left, FileSize right) => left._bytes <= right._bytes;
+        public static bool operator <=(FileSize left, FileSize right) => left.Bytes <= right.Bytes;
 
-        public static bool operator ==(FileSize left, FileSize right) => left._bytes == right._bytes;
+        public static bool operator ==(FileSize left, FileSize right) => left.Bytes == right.Bytes;
 
-        public static bool operator !=(FileSize left, FileSize right) => left._bytes != right._bytes;
+        public static bool operator !=(FileSize left, FileSize right) => left.Bytes != right.Bytes;
 
         /// <summary>
         /// Determines whether this instance and a specified object, which must also be a FileSize object, have the same value.
@@ -95,7 +93,7 @@
         {
             if (obj is FileSize other)
             {
-                return _bytes == other._bytes;
+                return Bytes == other.Bytes;
             }
             return false;
         }
@@ -106,7 +104,7 @@
         /// <returns>A 32-bit signed integer hash code.</returns>
         public override int GetHashCode()
         {
-            return _bytes.GetHashCode();
+            return Bytes.GetHashCode();
         }
 
         /// <summary>
@@ -115,7 +113,7 @@
         /// <returns>A string representation of the file size.</returns>
         public override string ToString()
         {
-            return $"{_bytes} bytes ({Megabytes:F2} MB, {Gigabytes:F2} GB)";
+            return $"{Bytes} bytes ({Megabytes:F2} MB, {Gigabytes:F2} GB)";
         }
     }
 }

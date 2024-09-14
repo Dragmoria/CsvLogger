@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="schema.xsd">
-	<column name="StartDateTime" type="dt" />
+<schema>
+	<column name="StartDateTime" type="invalid" />
 	<column name="EndDateTime" type="dt" />
 	<column name="Identifier" type="g" />
 	<column name="Field1" type="s" />
