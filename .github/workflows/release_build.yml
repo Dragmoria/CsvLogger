@@ -31,7 +31,7 @@ jobs:
       run: dotnet publish --configuration Release --output ./output --no-restore
 
     - name: Upload artifact
-      uses: softprops/action-gh-release@1
+      uses: softprops/action-gh-release@v1
       with:
         files: ./output/**
       env:
